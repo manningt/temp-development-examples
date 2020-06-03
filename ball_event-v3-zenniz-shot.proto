@@ -1,0 +1,90 @@
+// Copyright 2020 Boomer Inc.
+//
+// License ?
+
+syntax = "proto3";
+option objc_class_prefix = "BES";
+
+import "google/protobuf/timestamp.proto";
+
+package ballevent;
+
+service BallEvent {
+  // Provides a stream of Points as ball events occur
+  rpc GetEvents (RequestEvents) returns (stream Point) {}
+}
+
+  // The following message for requesting the start of the ball location event stream
+message RequestEvents {
+  string mode = 1;
+}
+
+/*
+ This message is a simple ball event used as a placeholder until the final message format
+ is deteremined.  It does not have spin data and the eventType enum may get eliminated.
+
+ Here is a description of the fields:
+ The timestamp field will be changed to be a google.protobuf.Timestamp from an int64
+ The intensity is maximum intensity of the sound (don't know units or scaling?)
+ The location of a point is represented as x, y, z offsets in millimeters from a reference point on the court.
+ This reference point (0,0,0) would be on the ground on the left singles sideline directly under the net.
+ x= 0 mm.      Corresponds to the left (ad court) singles sideline (as viewed from Boomer's side of the court)
+ x= 8230 mm.   Corresponds to the right singles sideline (deuce court) 
+ y= 0 mm.      Corresponds to the center of the court (under the net)
+ y= 11887 mm.  Corresponds to the baseline on Boomer's side of the court
+ y= -11887 mm. Corresponds to the baseline on the user's side of the court
+ z= 0 mm.      Corresponds to the ground. Positive direction is up.
+*/
+message Point {
+  int64 timestamp = 1;
+  int32 intensity=2;
+  int32 x = 3;
+  int32 y = 4;
+  int32 x = 5;
+  enum EventType {
+    kUnknown = 0;
+    kRacquetHit = 1;
+    kCourtHit = 2;
+    kBallLaunch = 3;
+    kNetHit = 4;
+    kFenceHit = 5;
+  }
+  EventType event_type = 5;
+}
+
+// The following is proposed content for a ball event message which needs to be discussed.
+message Shot {
+    google.protobuf.Timestamp created_time = 1;
+    google.protobuf.Timestamp modified_time = 2;
+    string id = 3;
+    string rally_id = 4;
+    string player_id = 5;
+    google.protobuf.Timestamp stroke_time = 6;
+    enumr.ShotType type = 7;
+    enumr.ShotCall call = 8;
+    google.protobuf.Timestamp net_time = 9;
+    google.protobuf.Timestamp bounce_time = 10;
+    google.protobuf.Timestamp second_bounce_time = 11;
+    repeated float stroke_xyz = 12;
+    float net_y = 13;
+    repeated float bounce_xyz = 14;
+    repeated float second_bounce_xyz = 15;
+    // Direction at shotpb start (from stroke)
+    repeated float stroke_unit_vector_xyz = 16;
+    repeated float net_unit_vector_xyz = 17;
+    // Spin along (top) and perpendicular (side) to the stroke unit vector
+    repeated float stroke_spin_top_side = 18;
+    // Spins for bounce and net
+    repeated float bounce_spin_top_side = 19;
+    repeated float net_spin_top_side = 20;
+    // Speed at stroke, m/s
+    float stroke_speed = 21;
+    // Speed at bounce start
+    float bounce_speed = 22;
+    // Ball mark [length,width], length is along
+    shotpb plane
+    repeated float ball_mark_size = 23;
+    float ball_mark_angle = 24;
+    repeated string videoclip_id = 25;
+}
+
